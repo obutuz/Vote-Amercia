@@ -7,7 +7,7 @@
 
 require_once("twilio-php/Services/Twilio.php");
 
-function doVote($election = 'election1', $phone, $message){
+function doVote($election = 'testelection', $phone, $message){
 	$status = 'othererror'; $userid = 0;
 	
 	//-- connect to DB
@@ -28,7 +28,7 @@ function doVote($election = 'election1', $phone, $message){
 	$candidate = strtolower(filter_var($msgarray[1], FILTER_SANITIZE_STRING));
 	if(strlen($candidate) > 30 || strlen($candidate) < 3){ 
 		//log error
-		$sql = "INSERT INTO log VALUES (null,'error','invalid candidate: $candidate',null,null)";
+		$sql = "INSERT INTO log VALUES (null,'error','invalid candidate: $candidate user: $netid',null,null)";
 		if(!$result = $mysqli->query($sql)) die('There was an error running the query [' . $mysqli->error . ']');
 		$status = "invalidcandidate";
 		return $status; 
@@ -41,7 +41,7 @@ function doVote($election = 'election1', $phone, $message){
 	if (!$result->num_rows) {  
 		$status = 'notinclass'; 
 		//log error
-		$sql = "INSERT INTO log VALUES (null,'error_user_not_found','$netid',null,null)";
+		$sql = "INSERT INTO log VALUES (null,'error_user_not_found','user: $netid candidate: $candidate',null,null)";
 		if(!$result = $mysqli->query($sql)) die('There was an error running the query [' . $mysqli->error . ']');
 		return $status;
 	} else {
