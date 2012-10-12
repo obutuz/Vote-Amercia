@@ -10,11 +10,12 @@
 
     header("content-type: text/xml");
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    include_once("functions.php");
+
 ?>
 <Response>
     <Sms>
     	<?
-	    	include_once("index.php");
 	    	$vote = doVote('testelection',$user_number,$message);
 	    	if($vote == "votesuccess"){
 		    	echo "Vote submitted!";
