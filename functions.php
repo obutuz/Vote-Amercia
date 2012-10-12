@@ -1,7 +1,4 @@
 <? /* http://vote.anewamercia.com */
-$username=""; $password=""; $database="";$hostname = "";
-include_once("connect.php");
-
 /* tables: 
 	votes (vote_id,vote_candidate,vote_time)
 	users (user_id,user_netid,user_phone)
@@ -13,16 +10,16 @@ require_once("twilio-php/Services/Twilio.php");
 function doVote($election = 'election1', $phone, $message){
 	$status = 'othererror'; $userid = 0;
 	
-	//connect to DB
+	//-- connect to DB
 	$mysqli = new mysqli($GLOBALS['hostname'], $GLOBALS['username'], $GLOBALS['password'], $GLOBALS['database']);
 	if (mysqli_connect_errno()) {printf("Connect failed: %s\n", mysqli_connect_error()); return $status;}
 	
-	//split message into array of netid & candidate
+	//-- split message into array of netid & candidate
 	$msgarray = explode(" ", $message);
 	
-	//filter for string
+	//-- filter for string
 	$netid = strtolower(filter_var($msgarray[0], FILTER_SANITIZE_STRING));
-	if(strlen($netid) > 10 || strlen($netid) < 5){ 
+	if(strlen($netid) > 9 || strlen($netid) < 6){ 
 		$sql = "INSERT INTO log VALUES (null,'error','invalid netid: $netid',null,null)";
 		if(!$result = $mysqli->query($sql)) die('There was an error running the query [' . $mysqli->error . ']');
 		$status = "invalidnetid"; 
@@ -37,7 +34,7 @@ function doVote($election = 'election1', $phone, $message){
 		return $status; 
 		}
 		
-	//find user
+	//-- find user
 	$sql = "SELECT * FROM users WHERE user_netid = '$netid'";
     if(!$result = $mysqli->query($sql)) die('There was an error running the query [' . $mysqli->error . ']');
 	$user = $result->fetch_array(MYSQLI_ASSOC);
@@ -51,7 +48,7 @@ function doVote($election = 'election1', $phone, $message){
 		$userid = $user["user_id"];	
 	}
 	
-	//verify phone number
+	//-- register/verify phone number
 	if(!$user["user_phone"]){
 		$sql = "UPDATE users SET user_phone = '$phone' WHERE user_id = $userid";
 		if(!$result = $mysqli->query($sql)) die('There was an error running the query [' . $mysqli->error . ']');
@@ -63,7 +60,7 @@ function doVote($election = 'election1', $phone, $message){
 		}
 	}
 		
-	//check for previous votes for user
+	//-- check for previous votes for user
 	$sql = "SELECT * FROM users JOIN log ON users.user_id = log.user_id WHERE log_category = 'user_voted' AND log_message = '$election' AND users.user_id = '$userid'";
     if(!$result = $mysqli->query($sql)) die('There was an error running the query [' . $mysqli->error . ']');
 	    if ($result->num_rows > 0) {  
@@ -74,7 +71,7 @@ function doVote($election = 'election1', $phone, $message){
 			return $status;
 		}
 	
-	//add vote to db
+	//-- add vote to db
 	$mysqli->autocommit(FALSE);
 	try {
 		$q2 = $mysqli->prepare("INSERT INTO votes VALUES (null,?,null)");

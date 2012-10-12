@@ -7,6 +7,5 @@ include_once("functions.php");
 	users (user_id,user_netid,user_phone)
 	log (log_id,log_type,log_message,user_id,log_time)
 */
-
-
+print_r(doVote('testelection','23232323','andrew candidate1'));
 ?>
