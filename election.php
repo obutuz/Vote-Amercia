@@ -1,18 +1,15 @@
 <?
-if(isset($_GET['refresh'])) $refresh = 2;
-$electionid = 2;
-if(isset($_GET['id'])) $electionid = filter_var($_GET['id'], FILTER_SANITIZE_NUMBER_INT);
+if(!isset($_GET['refresh'])) $refresh = 2;
 $username=""; $password=""; $database="";$hostname = "";
 include_once("connect.php");
+if($_COOKIE["VotePass"] != $votepass_hash && $pass_hash != $votepass_hash) { 
+header('HTTP/1.1 403 Forbidden');
+include("votelogin.php");
+die();
+}
 include_once("functions.php");
-$election = "amercia";
 $mysqli = new mysqli($GLOBALS['hostname'], $GLOBALS['username'], $GLOBALS['password'], $GLOBALS['database']);
 if (mysqli_connect_errno()) {printf("Connect failed: %s\n", mysqli_connect_error()); return $status;}
-
-$sql = "select election_keyword from elections where election_id = $electionid";
-if(!$result = $mysqli->query($sql)) die('There was an error running the query [' . $mysqli->error . ']');
-$row = $result->fetch_array(MYSQLI_NUM);
-$keyword = $row[0];
 ?> 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
 <html lang="en">
@@ -23,19 +20,34 @@ $keyword = $row[0];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
 
     <!-- Le styles -->
-    <link href="css/bootstrap.css" rel="stylesheet">
     <style>
       body {
+         background: url('img/bg.jpg') repeat-y;
+        background-size: 100%;
+        color:white;
+        background-attachment: fixed;
         padding-top: 0; /* 60px to make the container go all the way to the bottom of the topbar */
       }
       h3 {
 	      line-height: 25px;
 	      padding: 5px 0 10px;
       }
+      .pie{
+	      height: 350px;
+	      width:100%;
+      }
+      .pieoutside{
+	      width: 50%;
+	      height: 280px;
+	      float:left;
+	      margin:auto;
+	      margin-top:10px;
+      }
     </style>
-    <link href="css/bootstrap-responsive.css" rel="stylesheet">
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -56,155 +68,82 @@ $keyword = $row[0];
       google.load('visualization', '1', {packages: ['corechart']});
     </script>
     <script type="text/javascript">
-    var chart1 = null, chart2 = null, data = null, data2 = null, jsonData = null, jsonData2 = null, dataArray = null, dataArray2 = null, v1width = $('#visualization').width(),v2width = $('#visualization2').width();
+    var chart1 = null, data1 = null, jsonData1 = null, dataArray1 = null, chart2 = null, data2 = null, jsonData2 = null, dataArray2 = null, chart3 = null, data3 = null, jsonData3 = null, dataArray3 = null, chart4 = null, data4 = null, jsonData4 = null, dataArray4 = null, chart5 = null, data5 = null, jsonData5 = null, dataArray5 = null, chart6 = null, data6 = null, jsonData6 = null, dataArray6 = null, v1width = $('#visualization').width(),v2width = $('#visualization2').width();
     function drawVisualization() {
-  // Create and populate the data table.
-  jsonData = $.ajax({
-	  url: "json.php?election=<? echo $electionid; ?>",
-	  dataType: "json",
-	  async: false
-  }).responseText;
-  jsonData2 = $.ajax({
-	  url: "json.php?election=<? echo $electionid; ?>&userstatus",
-	  dataType: "json",
-	  async: false
-  }).responseText;
-dataArray = JSON.parse(jsonData);
-dataArray2 = JSON.parse(jsonData2);
-    data = google.visualization.arrayToDataTable(dataArray);
-  data2 = google.visualization.arrayToDataTable(dataArray2);
-  // Create and draw the visualization.
- chart1 = new google.visualization.BarChart(document.getElementById('visualization'));
- chart1.draw(data,
-           {title:"Votes, by Candidate",
-            width:v1width, height:500,
-            vAxis: {title: null, minValue: 0, baseline: 0},
-            hAxis: {title: null, minValue: 0, baseline: 0},
-            legend: {position: "bottom"},
-            chartArea: {left: 0, right: 0, top: 30, width: '90%', height: '400px'},
-            axisTitlesPosition: "none"
-            }
-      );
-  chart3 = new google.visualization.PieChart(document.getElementById('visualization3'));
-      chart3.draw(data2, {title:"Total Voters", is3D: true, legend: {position: 'bottom'}, pieSliceText: 'value'}); 
-     
+
+  var array1 = [["Hour","Votes by hour","Total Votes"],["9am",19, 19],["10am",46, 65],["11am",37, 102],["12pm",54, 156],["1pm",65, 221],["2pm",57, 278],["3pm",73, 351],["4pm",58, 409],["5pm",40, 449],["6pm",48, 497],["7pm",12, 509]];
+    var array2 = [["Candidate","Responses"],["Diaz",152],["Rhodes",175],["Lawrence",103],["Undecided",78]];
+  var array3 = [["Candidate","Responses"],["Diaz",158],["Rhodes",94],["Lawrence",112],["Undecided",144]];
+  var array4 = [["Candidate","Responses"],["Diaz",157],["Rhodes",176],["Lawrence",109],["Undecided",66]];
+  var array5 = [["Candidate","Responses"],["Potter",149],["Taylor",71],["Countryman",127],["Undecided",161]];
+  var array6 = [["Candidate","Responses"],["Diaz",217],["Lawrence",145],["Undecided",146]];
+  
+    data1 = google.visualization.arrayToDataTable(array2);
+  data2 = google.visualization.arrayToDataTable(array1);
+    data3 = google.visualization.arrayToDataTable(array3);
+  data4 = google.visualization.arrayToDataTable(array4);
+  data5 = google.visualization.arrayToDataTable(array5);
+
+
+  chart2 = new google.visualization.ComboChart(document.getElementById('visualization2'));
+    chart1 = new google.visualization.PieChart(document.getElementById('visualization1'));
+      chart3 = new google.visualization.PieChart(document.getElementById('visualization3'));
+        chart4 = new google.visualization.PieChart(document.getElementById('visualization4'));
+  chart5 = new google.visualization.PieChart(document.getElementById('visualization5'));
+
+
+
+  chart2.draw(data2, {title:"Votes by hour, with total", legend: {position: 'none'}, chartArea : {},hAxis: {textStyle : {color:"white"}}, pieSliceText: 'value', titleTextStyle:{color:"white"}, backgroundColor: { fill:'transparent' }, seriesType: "line", vAxes: {0: {logScale: false, textStyle: { color: "#00CCFF"}},
+            1: {logScale: false, textStyle: { color: "#FF3333"}}},
+    series:{ 0:{targetAxisIndex:0, type: "bars"}, 1:{targetAxisIndex:1}}}); 
+
+  chart1.draw(data1, {title:"Which candidate has used the Web & Social Media most effectively?", backgroundColor: { fill:'transparent' },titleTextStyle:{color:"white"}, legend: {position: 'left', textStyle:{color:"white"}}, is3D: true, pieSliceText: 'percentage', chartArea: {width: "400px"},hAxis: {color:"white"}}); 
+
+  chart3.draw(data3, {title:"Which candidate has performed best in the debates?", backgroundColor: { fill:'transparent' },titleTextStyle:{color:"white"}, legend: {position: 'left', textStyle:{color:"white"}}, is3D: true, pieSliceText: "percentage", chartArea: {height: "400px", left: 20, right:0}}); 
+ 
+  chart4.draw(data4, {title:"Which candidate has had the most effective advertisements?", backgroundColor: { fill:'transparent' }, titleTextStyle:{color:"white"}, legend: {position: 'left', textStyle:{color:"white"}}, is3D: true, pieSliceText: "percentage", chartArea: {width: "400px"}}); 
+
+  chart5.draw(data5, {title:"Which Vice Presidential running mate added the most to the ticket?", backgroundColor: { fill:'transparent' }, titleTextStyle:{color:"white"}, legend: {position: 'left', textStyle:{color:"white"}}, is3D: true, pieSliceText: "percentage", chartArea: {width: "400px", left: 20, right:0}}); 
+
 }
       google.setOnLoadCallback(drawVisualization);
+
     </script>
 
   </head>
   <body>
-     <div class="navbar navbar-inverse navbar-static-top" style="display:;">
-      <div class="navbar-inner">
-          <a class="brand" href="/">Amercia Elections</a>
-      </div>
-    </div>
-    <div class="container-fluid">
-    <div class="row-fluid">
-        <div class="span6">
-    <h2><? if($keyword == "votedem"){ echo "Democratic Primary";} else if($keyword == "voterep") { echo "Republican Primary";}?></h2>
-      <p style="font-size:20px;font-weight:bold;">Text "[NETID] [CANDIDATE]" to (315) 605-0277</p>
-        	<div id="vizoutside" style="padding:0; border:;width: ;">
-    <div id="visualization" style="width: ; height: 500px; "><img src="img/loader.gif" /></div>
-        	</div>
-    </div>
-    <div class="span6">
-    <div id="vizoutside" style="margin-top:10px; border-right:;width: ;">
-    <div id="visualization3" style="width: ; height: 500px;"><img src="img/loader.gif" /></div>
+          <div style="padding:30px 0 20px 0;text-align:center;"><a href="http://www.electionclass.com/"><img src="img/banner.png" border="0" /></a></div>
+<div style="text-align:left;padding-left:20px;"><a href="/" style="padding:5px;background-color:rgba(255,255,255,0.8);border:solid 1px black;">< < < Back to main results</a></div>
+  <div style="height:1200px;background-color:;">
+  <div id="vizoutside" style="margin-top:; border-right:;width: ;">
+    <div id="visualization2" style="width: ; height: 500px;"><img src="img/loader.gif" /></div>
   	</div>
-    </div>
-    </div>
-    <div class="row-fluid">
-    <div class="span6" style="text-align:left;">
-        <p style="text-align:left;">
-            <? if(!$refresh){?><p><button class="btn btn-info" onclick="activateRefresh();">Auto-refresh results</button></p> <? } else { ?> 
-<p><img src="img/loader.gif" /> Live results... &nbsp; <a href="/?id=<? echo $electionid; ?>" class="btn">Disable auto-refresh</a></p>
-<? } ?><br />
-        <? 
-    if($keyword == "votedem"){ 
-    	echo "Democratic Primary&nbsp;&nbsp;<a href='/?id=1'>Republican Primary</a>"; 
-    } else if ($keyword == "voterep"){ 
-	    echo "<a href='/?id=2'>Democratic Primary</a>&nbsp;&nbsp;Republican Primary";	
-    	}?></p>
+  	  	<div style="padding:0 20px;"><h3 style="padding:0;margin:0;">Exit poll responses</h3></div>
+  	<div id="vizoutside" style="margin-top:; border-right:;" class="pieoutside">
+    <div id="visualization1" style="width: ; height: ;" class="pie"><img src="img/loader.gif" /></div>
+  	</div>
+  	 <div id="vizoutside" style="margin-top:; border-right:;width: ;" class="pieoutside">
+    <div id="visualization3" style="width: ; height: ;" class="pie"><img src="img/loader.gif" /></div>
+  	</div>
+    <div id="vizoutside" style="margin-top:; border-right:;width: ;" class="pieoutside">
+    <div id="visualization4" style="width: ; height: ;" class="pie"><img src="img/loader.gif" /></div>
+  	</div>
+  	<div id="vizoutside" style="margin-top:; border-right:;width: ;" class="pieoutside">
+    <div id="visualization5" style="width: ; height: ;" class="pie"><img src="img/loader.gif" /></div>
+  	</div>
+  </div>
+<div style="clear:both;margin-top:;">
+<div style="padding:0 20px;">
 
-    </div>
-    <div class="span6">
-    <p style="padding-top:5px;text-align:right;">[an <a href="http://www.twitter.com/awbauer9" target="_blank">@awbauer9</a> and <a href="http://www.twitter.com/cbeck527" target="_blank">@cbeck527</a> production]</p><br /><br />
-    <form id="loginform"><div class="input-append" style="float:right;"><input type="password" id="password" style="width:150px;" placeholder="Password" />&nbsp;<input type="submit" onclick="" class="btn" value="Login"></div></form>
-    </div>
-    </div>
-    <div class="row-fluid">
-    <div class="span8" style="">
-<div style="padding-top:30px;margin:auto;">
-
+    <p style="padding-top:5px;text-align:right;">[a NEXIS production by <a href="http://www.twitter.com/awbauer9" target="_blank">@awbauer9</a> and <a href="http://www.twitter.com/cbeck527" target="_blank">@cbeck527</a>]</p>
 </div>
-    </div>
-        <div class="span4" style="text-align:right;padding-top:40px;">
-        
-   &nbsp;    </div>
-    </div>
-    </div>
-    <script type="text/javascript">
-    function activateRefresh(){
-    	var interval = $('#refreshInt').val();
-	    window.location = '/?refresh&id=<? echo $electionid; ?>';
-    }
-    function refresh(){
-  jsonData = $.ajax({
-	  url: "json.php?election=<? echo $electionid; ?>",
-	  dataType: "json",
-	  async: false
-  }).responseText;
-  jsonData2 = $.ajax({
-	  url: "json.php?election=<? echo $electionid; ?>&userstatus",
-	  dataType: "json",
-	  async: false
-  }).responseText;
-dataArray = JSON.parse(jsonData);
-dataArray2 = JSON.parse(jsonData2);
-    data = google.visualization.arrayToDataTable(dataArray);
-  data2 = google.visualization.arrayToDataTable(dataArray2);
-  // Create and draw the visualization.
- chart1 = new google.visualization.BarChart(document.getElementById('visualization'));
- chart1.draw(data,
-           {title:"Votes, by Candidate",
-            width:v1width, height:500,
-            vAxis: {title: null, minValue: 0, baseline: 0},
-            hAxis: {title: null, minValue: 0, baseline: 0},
-            legend: {position: "bottom"},
-            chartArea: {left: 0, right: 0, top: 30, width: '90%', height: '400px'},
-            axisTitlesPosition: "none"
-            }
-      );
-  chart3 = new google.visualization.PieChart(document.getElementById('visualization3'));
-      chart3.draw(data2, {title:"Total Voters", is3D: true, legend: {position: 'bottom'}, pieSliceText: 'value'}); 
-}
-    $("#loginform").submit(function(evt){
-	    evt.preventDefault();
-	    login();
-    })
-    function login(){
-    	var pass = $('#password').val();
-	    $.post('admin.php?dologin', {password: pass}, function(data){
-		   if(data == 'badpassword'){
-		   		alert('THERE WILL BE NO VOTER FRAUD HERE!');
-		   } else if(data != 'success'){
-			   alert(data);
-		   } else {
-			   document.location = '/admin.php';
-		   }
-	    });
-    }
-    
-    <? 
-    if($refresh > 0) {
-    	echo "
-    var id;	
-    id = setInterval(function() {
-	    refresh();
-	}, 2000);";	 
-	    }
-    ?>
+
+  	    <script type="text/javascript">
+
+    $(function() {
+	  // drawChart('2'); 
+
+    });
     </script>
     <!-- Start of StatCounter Code for Default Guide -->
 <script type="text/javascript">
@@ -222,5 +161,19 @@ scJsHost +
 src="https://c.statcounter.com/8382375/0/c4d43e79/1/"
 alt="web analytics"></div></noscript>
 <!-- End of StatCounter Code for Default Guide -->
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-557565-12']);
+  _gaq.push(['_setDomainName', 'anewamercia.com']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
   </body>
 </html>
